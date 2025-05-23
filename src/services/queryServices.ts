@@ -1,24 +1,42 @@
-import { PrismaClient } from '@prisma/client';
-const prisma = new PrismaClient();
+import { SavedQueryModel, ISavedQuery } from '../models/SavedQuery';
+import mongoose from 'mongoose';
 
-export async function createSavedQuery(userId: number, name: string | undefined, query: any) {
-  return prisma.savedQuery.create({
-    data: { userId, name, query },
+export async function createSavedQuery(
+  userId: string,
+  name: string | undefined,
+  query: any
+): Promise<ISavedQuery> {
+  const doc = new SavedQueryModel({
+    userId,
+    name,
+    query,
   });
+  return doc.save();
 }
 
-export async function getSavedQueries(userId: number) {
-  return prisma.savedQuery.findMany({
-    where: { userId },
-    orderBy: { createdAt: 'desc' },
-  });
+export async function getSavedQueries(userId: string): Promise<ISavedQuery[]> {
+  return SavedQueryModel.find({ userId }).sort({ createdAt: -1 }).exec();
 }
 
-export async function findQueriesByPredicate(predicate: string) {
-  return prisma.$queryRaw<Array<any>>`
-    SELECT * FROM "SavedQuery" sq WHERE EXISTS (
-      SELECT 1 FROM jsonb_each(sq.query->'message'->'query_graph'->'edges') AS e(key, val)
-      WHERE val->'predicates' ? ${predicate}
-    )
-  `;
+export async function findQueriesByPredicate(predicate: string): Promise<ISavedQuery[]> {
+  return SavedQueryModel.aggregate([
+    {
+      $addFields: {
+        edgesArray: {
+          $objectToArray: '$query.message.query_graph.edges',
+        },
+      },
+    },
+    { $unwind: '$edgesArray' },
+    {
+      $match: {
+        'edgesArray.v.predicates': predicate,
+      },
+    },
+    {
+      $project: {
+        edgesArray: 0,
+      },
+    },
+  ]);
 }

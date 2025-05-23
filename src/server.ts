@@ -1,11 +1,20 @@
 import express, { Request, Response } from 'express';
-import { PORT } from './config';
+import { MONGODB_URI, PORT } from './config';
 
 import queryRoutes from './routes/queryRoutes';
 import userRoutes from './routes/userRoutes';
+import mongoose from 'mongoose';
 
 const app = express();
 app.use(express.json());
+
+mongoose
+  .connect(MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  } as mongoose.ConnectOptions)
+  .then(() => console.log('Connected to MongoDB'))
+  .catch((err) => console.error(err));
 
 app.use('/api/queries', queryRoutes);
 app.use('/api/users', userRoutes);
