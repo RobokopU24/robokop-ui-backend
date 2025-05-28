@@ -1,13 +1,13 @@
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
-export async function createSavedQuery(userId: number, name: string | undefined, query: any) {
+export async function createSavedQuery(userId: string, name: string | undefined, query: any) {
   return prisma.savedQuery.create({
     data: { userId, name, query },
   });
 }
 
-export async function getSavedQueries(userId: number) {
+export async function getSavedQueries(userId: string) {
   return prisma.savedQuery.findMany({
     where: { userId },
     orderBy: { createdAt: 'desc' },
