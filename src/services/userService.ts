@@ -32,10 +32,3 @@ export async function getUserByIdWithWebauthn(userId: string) {
     include: { WebAuthnCredential: true },
   });
 }
-
-export async function updateUserChallenge(userId: string, challenge: string) {
-  return prisma.user.update({
-    where: { id: userId },
-    data: { currentChallenge: challenge },
-  });
-}

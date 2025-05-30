@@ -1,5 +1,5 @@
 import { RequestHandler, Request, Response } from 'express';
-import { getUserByIdWithWebauthn, updateUserChallenge } from '../services/userService';
+import { getUserByIdWithWebauthn } from '../services/userService';
 import {
   generateAuthenticationOptions,
   generateRegistrationOptions,
@@ -18,20 +18,11 @@ import {
   findPasskeysByUserId,
   updateCounter,
 } from '../services/webAuthCredentialService';
-import { AuthenticationResponseJSON } from '@simplewebauthn/typescript-types';
-
-interface Passkey {
-  id: string;
-  credentialId: string;
-  publicKey: string;
-  counter: number;
-  userId: string;
-  deviceType: string | null;
-  backedUp: boolean;
-  transports: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import {
+  AuthenticationResponseJSON,
+  AuthenticatorTransport,
+  RegistrationResponseJSON,
+} from '@simplewebauthn/typescript-types';
 
 export const generateRegistrationOptionsHandler: RequestHandler = async (
   req: Request,
@@ -52,8 +43,16 @@ export const generateRegistrationOptionsHandler: RequestHandler = async (
       return;
     }
 
+    const excludeCredentials: PublicKeyCredentialDescriptor[] = user.WebAuthnCredential.map(
+      (cred) => ({
+        id: Buffer.from(cred.credentialId, 'base64'),
+        type: 'public-key',
+        transports: cred.transports as AuthenticatorTransport[],
+      })
+    );
+
     const options = await generateRegistrationOptions({
-      rpName: 'ROBOKOP',
+      rpName: process.env.RP_NAME || 'ROBOKOP',
       rpID: process.env.RP_ID || 'localhost',
       userID: user.id,
       userName: user.email,
@@ -63,9 +62,9 @@ export const generateRegistrationOptionsHandler: RequestHandler = async (
         userVerification: 'preferred',
         requireResidentKey: false,
       },
+      excludeCredentials,
     });
-
-    await updateUserChallenge(userId, options.challenge);
+    req.session.webauthnChallenge = options.challenge;
     res.json(options);
   } catch (error) {
     console.error('Error generating registration options:', error);
@@ -86,10 +85,11 @@ export const verifyRegistrationHandler: RequestHandler = async (
       return;
     }
 
+    const registrationResponseBody = req.body as RegistrationResponseJSON;
     const verification = (await verifyRegistrationResponse({
-      response: req.body,
-      expectedChallenge: user.currentChallenge || '',
-      expectedOrigin: process.env.FRONTEND_URL || 'http://localhost:5173',
+      response: registrationResponseBody,
+      expectedChallenge: req.session.webauthnChallenge || '',
+      expectedOrigin: process.env.FRONTEND_URL || 'https://localhost:4000',
       expectedRPID: process.env.RP_ID || 'localhost',
     })) as VerifiedRegistrationResponse;
 
@@ -105,7 +105,12 @@ export const verifyRegistrationHandler: RequestHandler = async (
         return;
       }
 
-      await createPasskey(credentialId, verification, user);
+      await createPasskey(
+        credentialId,
+        verification,
+        user,
+        registrationResponseBody.response.transports
+      );
       res.json({ verified: true });
     } else {
       res.json({ verified: false });
@@ -121,29 +126,12 @@ export const generateAuthenticationOptionsHandler: RequestHandler = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { id: userId } = req.user as any;
-
-    const user = await getUserByIdWithWebauthn(userId);
-    if (!user) {
-      res.status(404).json({ error: 'User not found' });
-      return;
-    }
-
-    if (user.WebAuthnCredential.length === 0) {
-      res.status(400).json({ error: 'No passkeys found for this user' });
-      return;
-    }
-
     const options = await generateAuthenticationOptions({
       rpID: process.env.RP_ID || 'localhost',
-      allowCredentials: user.WebAuthnCredential.map((passkey: Passkey) => ({
-        id: Buffer.from(passkey.credentialId, 'base64'),
-        type: 'public-key',
-        transports: ['internal'],
-      })),
       userVerification: 'preferred',
+      allowCredentials: [],
     });
-    await updateUserChallenge(userId, options.challenge);
+    req.session.webauthnChallenge = options.challenge;
     res.json(options);
   } catch (error) {
     console.error('Error generating authentication options:', error);
@@ -173,14 +161,16 @@ export const verifyAuthenticationHandler: RequestHandler = async (
 
     const verification = (await verifyAuthenticationResponse({
       response: body,
-      expectedChallenge: passkey.user.currentChallenge || '',
-      expectedOrigin: process.env.FRONTEND_URL || 'http://localhost:5173',
+      expectedChallenge: req.session.webauthnChallenge || '',
+      expectedOrigin: process.env.FRONTEND_URL || 'https://localhost:4000',
       expectedRPID: process.env.RP_ID || 'localhost',
       authenticator: {
         credentialPublicKey: Buffer.from(passkey.publicKey, 'base64'),
         credentialID: Buffer.from(passkey.credentialId, 'base64'),
         counter: passkey.counter,
-        transports: undefined,
+        transports: Array.isArray(passkey.transports)
+          ? (passkey.transports as AuthenticatorTransport[])
+          : undefined,
       },
     })) as VerifiedAuthenticationResponse;
 
@@ -192,7 +182,6 @@ export const verifyAuthenticationHandler: RequestHandler = async (
         process.env.JWT_SECRET || 'your-secret-key',
         { expiresIn: '24h' }
       );
-
       res.json({ verified: true, token });
     } else {
       res.json({ verified: false });
@@ -224,19 +213,15 @@ export const deletePasskeyHandler: RequestHandler = async (
   try {
     const { id: userId } = req.user as any;
     const passkey = await findPasskey(req.params.id);
-
     if (!passkey) {
       res.status(404).json({ error: 'Passkey not found' });
       return;
     }
-
     if (passkey.userId !== userId) {
       res.status(403).json({ error: 'Not authorized to delete this passkey' });
       return;
     }
-
     await deletePasskey(passkey.id);
-
     res.json({ message: 'Passkey deleted successfully' });
   } catch (error) {
     console.error('Error deleting passkey:', error);

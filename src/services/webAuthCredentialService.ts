@@ -1,4 +1,6 @@
 import { PrismaClient } from '@prisma/client';
+import { VerifiedRegistrationResponse } from '@simplewebauthn/server';
+import { AuthenticatorTransportFuture } from '@simplewebauthn/typescript-types';
 
 const prisma = new PrismaClient();
 
@@ -8,14 +10,23 @@ export async function checkExistingPasskey(credentialId: string) {
   });
 }
 
-export async function createPasskey(credentialId: string, verification: any, user: { id: string }) {
+export async function createPasskey(
+  credentialId: string,
+  verification: VerifiedRegistrationResponse,
+  user: { id: string },
+  transports: AuthenticatorTransportFuture[] | undefined
+) {
   return prisma.webAuthnCredential.create({
     data: {
       credentialId,
-      publicKey: Buffer.from(verification.registrationInfo.credentialPublicKey).toString('base64'),
-      counter: verification.registrationInfo.counter,
+      publicKey: Buffer.from(verification.registrationInfo?.credentialPublicKey || '').toString(
+        'base64'
+      ),
+      counter: verification.registrationInfo?.counter,
       userId: user.id,
-      deviceType: 'platform',
+      deviceType: verification.registrationInfo?.credentialDeviceType,
+      transports,
+      backedUp: verification.registrationInfo?.credentialBackedUp,
     },
   });
 }
