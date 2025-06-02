@@ -27,6 +27,7 @@ export const validateToken: RequestHandler = async (req: Request, res: Response)
       res.status(401).json({ error: 'User not found' });
       return;
     }
-    res.status(200).json({ message: 'Token is valid', user: { id: user.id, email: user.email } });
+    const { password, ...userWithoutPassword } = user;
+    res.status(200).json({ message: 'Token is valid', user: userWithoutPassword });
   });
 };

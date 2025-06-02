@@ -182,7 +182,8 @@ export const verifyAuthenticationHandler: RequestHandler = async (
         process.env.JWT_SECRET || 'your-secret-key',
         { expiresIn: '24h' }
       );
-      res.json({ verified: true, token });
+      const { password, ...userWithoutPassword } = passkey.user;
+      res.json({ verified: true, token, user: userWithoutPassword });
     } else {
       res.json({ verified: false });
     }
