@@ -35,3 +35,27 @@ export const searchQueries: RequestHandler = async (req: Request, res: Response)
     res.status(500).json({ error: 'Failed to search queries' });
   }
 };
+
+export const deleteQuery: RequestHandler = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id: userId } = req.user as any;
+    const queryId = req.params.id;
+    const query = await service.getSavedQueryByIdAndReturnUserId(queryId);
+    if (!query) {
+      res.status(404).json({ error: 'Query not found' });
+      return;
+    }
+    if (query.userId !== userId) {
+      res.status(403).json({ error: 'Not authorized to delete this query' });
+      return;
+    }
+    const deleted = await service.deleteSavedQuery(queryId);
+    if (!deleted) {
+      res.status(404).json({ error: 'Query not found' });
+      return;
+    }
+    res.json({ message: 'Query deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete query' });
+  }
+};

@@ -16,9 +16,20 @@ passport.use(
     },
     async (_accessToken, _refreshToken, profile, done) => {
       const email = profile.emails![0].value;
+      const name = profile.displayName;
+      const profilePicture = profile.photos?.[0]?.value || null;
       let user = await prisma.user.findUnique({ where: { email } });
       if (!user) {
-        user = await prisma.user.create({ data: { email, password: '' } });
+        user = await prisma.user.create({
+          data: { email, name, profilePicture },
+        });
+      } else {
+        if (user.profilePicture === null && profilePicture) {
+          user = await prisma.user.update({
+            where: { email },
+            data: { profilePicture },
+          });
+        }
       }
       done(null, user);
     }
@@ -55,10 +66,21 @@ passport.use(
         profile.emails?.[0]?.value ||
         ((profile as any)._json as GitHubProfileJson).email ||
         `${profile.username}@users.noreply.github.com`;
+      const name = profile.displayName || profile.username;
+      const profilePicture = profile.photos?.[0]?.value || null;
 
       let user = await prisma.user.findUnique({ where: { email } });
       if (!user) {
-        user = await prisma.user.create({ data: { email, password: '' } });
+        user = await prisma.user.create({
+          data: { email, name, profilePicture },
+        });
+      } else {
+        if (user.profilePicture === null && profilePicture) {
+          user = await prisma.user.update({
+            where: { email },
+            data: { profilePicture },
+          });
+        }
       }
       done(null, user);
     }

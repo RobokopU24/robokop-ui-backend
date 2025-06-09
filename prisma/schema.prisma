@@ -11,9 +11,9 @@ datasource db {
 model User {
   id                 String               @id @default(uuid())
   email              String               @unique
-  password           String
   createdAt          DateTime             @default(now())
-  currentChallenge   String?
+  name               String?
+  profilePicture     String?
   savedQueries       SavedQuery[]
   WebAuthnCredential WebAuthnCredential[]
 }

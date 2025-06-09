@@ -1,6 +1,6 @@
 import { Request, RequestHandler, Response } from 'express';
 import jwt from 'jsonwebtoken';
-import { getUserById } from '../services/userService';
+import { getUserByIdWithWebauthnCount } from '../services/userService';
 
 export function oauthCallback(req: Request, res: Response) {
   const user = req.user as any;
@@ -22,12 +22,20 @@ export const validateToken: RequestHandler = async (req: Request, res: Response)
       res.status(401).json({ error: 'Invalid token' });
       return;
     }
-    const user = await getUserById((decoded as any).userId);
+    const user = await getUserByIdWithWebauthnCount((decoded as any).userId);
     if (!user) {
       res.status(401).json({ error: 'User not found' });
       return;
     }
-    const { password, ...userWithoutPassword } = user;
-    res.status(200).json({ message: 'Token is valid', user: userWithoutPassword });
+    res.status(200).json({ message: 'Token is valid', user });
+  });
+};
+
+export const logout: RequestHandler = (req: Request, res: Response): void => {
+  req.logout((err) => {
+    if (err) {
+      return res.status(500).json({ error: 'Failed to log out' });
+    }
+    res.status(200).json({ message: 'Logged out successfully' });
   });
 };
