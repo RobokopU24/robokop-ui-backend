@@ -1,5 +1,11 @@
 import { RequestHandler, Request, Response } from 'express';
 import { getUserByIdWithWebauthn } from '../services/userService';
+
+declare module 'express-session' {
+  interface SessionData {
+    webauthnChallenge?: string;
+  }
+}
 import {
   generateAuthenticationOptions,
   generateRegistrationOptions,
@@ -182,7 +188,7 @@ export const verifyAuthenticationHandler: RequestHandler = async (
         process.env.JWT_SECRET || 'your-secret-key',
         { expiresIn: '24h' }
       );
-      const { password, ...userWithoutPassword } = passkey.user;
+      const { ...userWithoutPassword } = passkey.user;
       res.json({ verified: true, token, user: userWithoutPassword });
     } else {
       res.json({ verified: false });

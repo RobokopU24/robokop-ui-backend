@@ -8,11 +8,13 @@ import passport from 'passport';
 import pg from 'pg';
 import https from 'https';
 import fs from 'fs';
+import swaggerUI from 'swagger-ui-express';
+import swaggerJsDoc from 'swagger-jsdoc';
+import morgan from 'morgan';
 
 import './auth/passport';
 
 import queryRoutes from './routes/queryRoutes';
-import userRoutes from './routes/userRoutes';
 import oauthRoutes from './routes/oauthRoutes';
 import passkeyRoutes from './routes/passkeyRoutes';
 
@@ -30,6 +32,35 @@ const postgresSession = pgSession(session);
 const pgPool = new pg.Pool({
   connectionString: process.env.DATABASE_URL,
 });
+
+const options = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'ROBOKOP API',
+      version: '1.0.0',
+      description: 'API documentation for ROBOKOP',
+    },
+    servers: [
+      {
+        url: `https://localhost:${PORT}`,
+        description: 'Local server',
+      },
+    ],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+        },
+      },
+    },
+  },
+  apis: ['./src/routes/*.ts'],
+};
+
+const specs = swaggerJsDoc(options);
 
 app.use(express.json());
 app.use(
@@ -52,19 +83,20 @@ app.use(
 );
 
 const corsOptions = {
-  origin: process.env.CORS_ORIGIN || 'https://localhost:3000',
+  origin: process.env.FRONTEND_URL || 'http://localhost:8080',
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
 };
 app.use(cors(corsOptions));
 app.use(express.urlencoded({ extended: true }));
+app.use(morgan('dev'));
 
 app.use(passport.initialize());
 app.use(passport.session());
 
+app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(specs));
 app.use('/api/queries', queryRoutes);
-app.use('/api/users', userRoutes);
 app.use('/api/auth', oauthRoutes);
 app.use('/api/passkeys', passkeyRoutes);
 

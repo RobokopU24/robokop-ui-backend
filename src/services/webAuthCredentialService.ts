@@ -34,7 +34,15 @@ export async function createPasskey(
 export async function findPasskeyById(credentialId: string) {
   return prisma.webAuthnCredential.findUnique({
     where: { credentialId },
-    include: { user: true },
+    include: {
+      user: {
+        include: {
+          _count: {
+            select: { WebAuthnCredential: true },
+          },
+        },
+      },
+    },
   });
 }
 

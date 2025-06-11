@@ -14,6 +14,16 @@ export async function getSavedQueries(userId: string) {
   });
 }
 
+export async function getSavedQueryByIdAndReturnUserId(queryId: string) {
+  return prisma.savedQuery.findUnique({
+    where: { id: queryId },
+    select: {
+      id: true,
+      userId: true,
+    },
+  });
+}
+
 export async function findQueriesByPredicate(predicate: string) {
   return prisma.$queryRaw<Array<any>>`
     SELECT * FROM "SavedQuery" sq WHERE EXISTS (
@@ -21,4 +31,10 @@ export async function findQueriesByPredicate(predicate: string) {
       WHERE val->'predicates' ? ${predicate}
     )
   `;
+}
+
+export async function deleteSavedQuery(queryId: string) {
+  return prisma.savedQuery.delete({
+    where: { id: queryId },
+  });
 }
