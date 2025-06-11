@@ -83,7 +83,7 @@ app.use(
 );
 
 const corsOptions = {
-  origin: process.env.CORS_ORIGIN || 'http://localhost:7080',
+  origin: process.env.FRONTEND_URL || 'http://localhost:8080',
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
