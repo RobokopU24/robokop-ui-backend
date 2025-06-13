@@ -1,0 +1,29 @@
+version: '3'
+services:
+  app:
+    build: .
+    container_name: robokop_backend
+    env_file:
+      - .env
+    ports:
+      - '4000:4000'
+      - '5555:5555'
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+
+  db:
+    image: postgres:latest
+    container_name: robokopdb
+    environment:
+      POSTGRES_USER: robokop_user
+      POSTGRES_PASSWORD: robokop123
+      POSTGRES_DB: robokopdb
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+volumes:
+  postgres-data:

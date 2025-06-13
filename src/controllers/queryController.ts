@@ -3,22 +3,24 @@ import * as service from '../services/queryServices';
 
 export const saveQuery: RequestHandler = async (req: Request, res: Response): Promise<void> => {
   try {
-    const userId = (req as any).user.id as string;
+    const reqUser = req.user as { id: string | number } | undefined;
+    const userId = (reqUser || {}).id as string;
     const { name, query } = req.body;
     const saved = await service.createSavedQuery(userId, name, query);
     res.status(201).json(saved);
   } catch (err) {
-    res.status(500).json({ error: 'Failed to save query' });
+    res.status(500).json({ error: err instanceof Error ? err.message : 'Failed to save query' });
   }
 };
 
 export const getQueries: RequestHandler = async (req: Request, res: Response): Promise<void> => {
   try {
-    const userId = (req as any).user.id as string;
+    const reqUser = req.user as { id: string | number } | undefined;
+    const userId = (reqUser || {}).id as string;
     const list = await service.getSavedQueries(userId);
     res.json(list);
   } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch queries' });
+    res.status(500).json({ error: err instanceof Error ? err.message : 'Failed to fetch queries' });
   }
 };
 
@@ -38,7 +40,8 @@ export const searchQueries: RequestHandler = async (req: Request, res: Response)
 
 export const deleteQuery: RequestHandler = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { id: userId } = req.user as any;
+    const reqUser = req.user as { id: string | number } | undefined;
+    const { id: userId } = reqUser || {};
     const queryId = req.params.id;
     const query = await service.getSavedQueryByIdAndReturnUserId(queryId);
     if (!query) {
@@ -56,6 +59,6 @@ export const deleteQuery: RequestHandler = async (req: Request, res: Response): 
     }
     res.json({ message: 'Query deleted successfully' });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to delete query' });
+    res.status(500).json({ error: err instanceof Error ? err.message : 'Failed to delete query' });
   }
 };

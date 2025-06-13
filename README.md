@@ -187,3 +187,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Support
 
 For support, please open an issue in the GitHub repository or contact the maintainers.
+
+docker compose build
+docker compose up -d
+docker compose run --rm app npx prisma migrate dev --name init
+docker compose exec app npx prisma studio
