@@ -29,6 +29,7 @@ import {
   AuthenticatorTransport,
   RegistrationResponseJSON,
 } from '@simplewebauthn/typescript-types';
+import { WebAuthnCredential } from '@prisma/client';
 
 export const generateRegistrationOptionsHandler: RequestHandler = async (
   req: Request,
@@ -50,8 +51,7 @@ export const generateRegistrationOptionsHandler: RequestHandler = async (
     }
 
     const excludeCredentials: PublicKeyCredentialDescriptor[] = user.WebAuthnCredential.map(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (cred: any) => ({
+      (cred: WebAuthnCredential) => ({
         id: Buffer.from(cred.credentialId, 'base64'),
         type: 'public-key',
         transports: cred.transports as AuthenticatorTransport[],
