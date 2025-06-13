@@ -40,9 +40,9 @@ export const generateRegistrationOptionsHandler: RequestHandler = async (
       res.status(401).json({ error: 'No token provided' });
       return;
     }
-
-    const { id: userId } = req.user as any;
-    const user = await getUserByIdWithWebauthn(userId);
+    const reqUser = req.user as { id: string | number } | undefined;
+    const { id: userId } = reqUser || {};
+    const user = await getUserByIdWithWebauthn(String(userId));
 
     if (!user) {
       res.status(404).json({ error: 'User not found' });
@@ -50,7 +50,8 @@ export const generateRegistrationOptionsHandler: RequestHandler = async (
     }
 
     const excludeCredentials: PublicKeyCredentialDescriptor[] = user.WebAuthnCredential.map(
-      (cred) => ({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (cred: any) => ({
         id: Buffer.from(cred.credentialId, 'base64'),
         type: 'public-key',
         transports: cred.transports as AuthenticatorTransport[],
@@ -83,8 +84,9 @@ export const verifyRegistrationHandler: RequestHandler = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { id: userId } = req.user as any;
-    const user = await getUserByIdWithWebauthn(userId);
+    const reqUser = req.user as { id: string | number } | undefined;
+    const { id: userId } = reqUser || {};
+    const user = await getUserByIdWithWebauthn(String(userId));
 
     if (!user) {
       res.status(404).json({ error: 'User not found' });
@@ -204,8 +206,9 @@ export const listPasskeysHandler: RequestHandler = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { id: userId } = req.user as any;
-    const passkeys = await findPasskeysByUserId(userId);
+    const reqUser = req.user as { id: string | number } | undefined;
+    const { id: userId } = reqUser || {};
+    const passkeys = await findPasskeysByUserId(String(userId));
     res.json(passkeys);
   } catch (error) {
     console.error('Error listing passkeys:', error);
@@ -218,7 +221,8 @@ export const deletePasskeyHandler: RequestHandler = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { id: userId } = req.user as any;
+    const reqUser = req.user as { id: string | number } | undefined;
+    const { id: userId } = reqUser || {};
     const passkey = await findPasskey(req.params.id);
     if (!passkey) {
       res.status(404).json({ error: 'Passkey not found' });

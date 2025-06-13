@@ -4,7 +4,6 @@ export const PORT = process.env.PORT || 4000;
 export const DATABASE_URL = process.env.DATABASE_URL!;
 export const JWT_SECRET = process.env.JWT_SECRET!;
 export const SALT_ROUNDS = parseInt(process.env.SALT_ROUNDS || '10', 10);
-export const BACKEND_URL = process.env.BACKEND_URL || 'https://localhost:4000';
 export const JWT_TOKEN_EXPIRES_IN = process.env.JWT_TOKEN_EXPIRES_IN || '30d';
 
 export const RP_NAME = process.env.RP_NAME || 'ROBOKOP Test';

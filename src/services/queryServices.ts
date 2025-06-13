@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function createSavedQuery(userId: string, name: string | undefined, query: any) {
   return prisma.savedQuery.create({
     data: { userId, name, query },
@@ -25,6 +26,7 @@ export async function getSavedQueryByIdAndReturnUserId(queryId: string) {
 }
 
 export async function findQueriesByPredicate(predicate: string) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return prisma.$queryRaw<Array<any>>`
     SELECT * FROM "SavedQuery" sq WHERE EXISTS (
       SELECT 1 FROM jsonb_each(sq.query->'message'->'query_graph'->'edges') AS e(key, val)
