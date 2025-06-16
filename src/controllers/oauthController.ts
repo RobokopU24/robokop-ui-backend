@@ -1,4 +1,4 @@
-import e, { Request, RequestHandler, Response } from 'express';
+import { Request, RequestHandler, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { getUserByEmail, getUserByIdWithWebauthnCount, createUser } from '../services/userService';
 
