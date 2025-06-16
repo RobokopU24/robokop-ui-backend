@@ -26,7 +26,6 @@ export function oauthCallback(req: Request, res: Response): void {
 }
 
 export const sendMagicLink: RequestHandler = async (req: Request, res: Response): Promise<void> => {
-  console.log(req.body);
   const email = req.body.email;
   if (!email) {
     res.status(400).json({ error: 'Email is required' });
@@ -58,7 +57,6 @@ export const sendMagicLink: RequestHandler = async (req: Request, res: Response)
         subject: 'Activate your account',
         html,
       });
-      console.log('New user email sent:', resendResponse);
       if (resendResponse.error === null) {
         res.status(200).json({ message: 'Account activation link sent successfully to ' + email });
       } else {
@@ -90,7 +88,6 @@ export const sendMagicLink: RequestHandler = async (req: Request, res: Response)
         subject: 'Your Magic Link',
         html,
       });
-      console.log('Magic link email sent:', resendResponse);
       if (resendResponse.error === null) {
         res.status(200).json({ message: 'Login link sent successfully' });
       } else {
