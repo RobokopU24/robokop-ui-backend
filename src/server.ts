@@ -91,7 +91,6 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev'));
-app.use(express.static('public'));
 
 app.use(passport.initialize());
 app.use(passport.session());

@@ -1,13 +1,6 @@
 import { Router } from 'express';
 import passport from 'passport';
-import {
-  oauthCallback,
-  validateToken,
-  logout,
-  sendMagicLink,
-  activateUserTokenHandler,
-  activateNewUserHandler,
-} from '../controllers/oauthController';
+import { oauthCallback, validateToken, logout } from '../controllers/oauthController';
 
 const router = Router();
 
@@ -139,9 +132,6 @@ router.get(
  */
 router.post('/validate-token', validateToken);
 
-router.post('/verification-link', sendMagicLink);
-router.get('/activate-user-token', activateUserTokenHandler);
-router.post('/activate-new-user', activateNewUserHandler);
 router.get('/logout', logout);
 
 export default router;
