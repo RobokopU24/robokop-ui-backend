@@ -73,5 +73,5 @@ jobs:
           file: Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ env.OWNER_LOWER }}/robokop-backend-server:latest
-            ghcr.io/${{ env.OWNER_LOWER }}/robokop-backend-server:${{ steps.get_version.outputs.VERSION }}
+            ghcr.io/robokopu24/robokop-backend-server:latest
+            ghcr.io/robokopu24/robokop-backend-server:${{ steps.get_version.outputs.VERSION }}
