@@ -45,6 +45,9 @@ jobs:
     name: Publish Docker image to GHCR
     if: github.event_name == 'release'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     needs: docker-build
     steps:
       - uses: actions/checkout@v3
@@ -73,5 +76,5 @@ jobs:
           file: Dockerfile
           push: true
           tags: |
-            ghcr.io/robokopu24/robokop-backend-server:latest
-            ghcr.io/robokopu24/robokop-backend-server:${{ steps.get_version.outputs.VERSION }}
+            ghcr.io/${{ env.OWNER_LOWER }}/robokop-backend-server:latest
+            ghcr.io/${{ env.OWNER_LOWER }}/robokop-backend-server:${{ steps.get_version.outputs.VERSION }}
