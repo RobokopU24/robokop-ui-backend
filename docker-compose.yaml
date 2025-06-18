@@ -10,9 +10,6 @@ services:
       - '5555:5555'
     depends_on:
       - db
-    volumes:
-      - .:/app
-
   db:
     image: postgres:latest
     container_name: robokopdb

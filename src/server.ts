@@ -6,8 +6,6 @@ import session from 'express-session';
 import pgSession from 'connect-pg-simple';
 import passport from 'passport';
 import pg from 'pg';
-import https from 'https';
-import fs from 'fs';
 import swaggerUI from 'swagger-ui-express';
 import swaggerJsDoc from 'swagger-jsdoc';
 import morgan from 'morgan';
@@ -20,13 +18,6 @@ import passkeyRoutes from './routes/passkeyRoutes';
 
 dotenv.config();
 
-const key = fs.readFileSync('localhost-key.pem');
-const cert = fs.readFileSync('localhost.pem');
-
-const httpsOptions = {
-  key: key,
-  cert: cert,
-};
 const app = express();
 const postgresSession = pgSession(session);
 const pgPool = new pg.Pool({
@@ -116,9 +107,6 @@ app.get('/health', (req: Request, res: Response) => {
   }
 });
 
-// app.listen(PORT, () => {
-//   console.log(`Server running: http://localhost:${PORT}`);
-// });
-https.createServer(httpsOptions, app).listen(PORT, () => {
-  console.log(`Server running: https://localhost:${PORT}`);
+app.listen(PORT, () => {
+  console.log(`Server running: http://localhost:${PORT}`);
 });
