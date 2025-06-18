@@ -49,6 +49,10 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Compute lowercase owner
+        run: |
+          echo "OWNER_LOWER=$(echo $GITHUB_REPOSITORY_OWNER | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
       - name: Extract release version
         id: get_version
         run: |
@@ -69,5 +73,5 @@ jobs:
           file: Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/robokop-backend-server:latest
-            ghcr.io/${{ github.repository_owner }}/robokop-backend-server:${{ steps.get_version.outputs.VERSION }}
+            ghcr.io/${{ env.OWNER_LOWER }}/robokop-backend-server:latest
+            ghcr.io/${{ env.OWNER_LOWER }}/robokop-backend-server:${{ steps.get_version.outputs.VERSION }}
