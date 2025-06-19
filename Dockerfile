@@ -35,7 +35,7 @@ FROM node:22-slim
 WORKDIR /app
 
 RUN apt-get update \
-    && apt-get install -y openssl libssl1.1 \
+    && apt-get install -y openssl libssl3 \
     && rm -rf /var/lib/apt/lists/*
 
 COPY package*.json ./
