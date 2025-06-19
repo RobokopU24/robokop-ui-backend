@@ -38,6 +38,8 @@ jobs:
           context: .
           file: Dockerfile
           push: true
+          cache-from: type=registry,ref=ghcr.io/${{ env.OWNER_LOWER }}/robokop-backend-server:cache
+          cache-to: type=registry,ref=ghcr.io/${{ env.OWNER_LOWER }}/robokop-backend-server:cache,mode=max
           tags: |
             ghcr.io/${{ env.OWNER_LOWER }}/robokop-backend-server:latest
             ghcr.io/${{ env.OWNER_LOWER }}/robokop-backend-server:${{ steps.get_version.outputs.VERSION }}
