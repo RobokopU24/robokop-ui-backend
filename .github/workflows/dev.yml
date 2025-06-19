@@ -75,6 +75,7 @@ jobs:
           context: .
           file: Dockerfile
           push: true
+          platforms: linux/amd64,linux/arm64
           tags: |
             ghcr.io/${{ env.OWNER_LOWER }}/robokop-backend-server:latest
             ghcr.io/${{ env.OWNER_LOWER }}/robokop-backend-server:${{ steps.get_version.outputs.VERSION }}
