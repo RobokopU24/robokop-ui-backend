@@ -2,6 +2,7 @@ version: '3'
 services:
   app:
     image: ghcr.io/robokopu24/robokop-backend-server:latest
+    platform: linux/amd64
     container_name: robokop_backend
     env_file:
       - .env
