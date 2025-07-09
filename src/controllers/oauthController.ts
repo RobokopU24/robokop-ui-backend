@@ -89,7 +89,7 @@ export const sendMagicLink: RequestHandler = async (req: Request, res: Response)
         html,
       });
       if (resendResponse.error === null) {
-        res.status(200).json({ message: 'Login link sent successfully' });
+        res.status(200).json({ message: `Login link sent successfully to ${email}` });
       } else {
         res.status(500).json({ error: 'Failed to send login link email' });
       }

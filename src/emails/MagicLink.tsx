@@ -5,6 +5,11 @@ export default function MagicLink({ link, email }: { link: string; email: string
   return (
     <Html>
       <div style={{ fontFamily: 'Arial, sans-serif', padding: '20px' }}>
+        <img
+          src="https://robokop.renci.org/logo-light.png"
+          alt="ROBOKOP Logo"
+          style={{ width: '150px', marginBottom: '20px' }}
+        />
         <h1 style={{ color: '#333' }}>Welcome to ROBOKOP</h1>
         <p style={{ color: '#555' }}>
           Hi {email},<br />

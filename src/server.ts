@@ -9,14 +9,18 @@ import pg from 'pg';
 import swaggerUI from 'swagger-ui-express';
 import swaggerJsDoc from 'swagger-jsdoc';
 import morgan from 'morgan';
+import axios from 'axios';
 
 import './auth/passport';
 
 import queryRoutes from './routes/queryRoutes';
 import oauthRoutes from './routes/oauthRoutes';
 import passkeyRoutes from './routes/passkeyRoutes';
+import qgraphRoutes from './routes/qgraphRoutes';
 
 dotenv.config();
+axios.defaults.maxContentLength = Infinity;
+axios.defaults.maxBodyLength = Infinity;
 
 const app = express();
 const postgresSession = pgSession(session);
@@ -88,6 +92,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(specs));
+app.use('/api', qgraphRoutes);
 app.use('/api/queries', queryRoutes);
 app.use('/api/auth', oauthRoutes);
 app.use('/api/passkeys', passkeyRoutes);
